@@ -113,8 +113,39 @@ final class ScanCoordinator: ObservableObject {
         trashResults = await Task.detached(priority: .userInitiated) {
             await service.moveToTrash(nodes, scope: root)
         }.value
+        let removedURLs = trashResults.filter(\.succeeded).map(\.originalURL)
+        await applyTrashChanges(removedURLs)
         selectedIDs.removeAll(); showsTrashResults = true
-        rescan()
+    }
+
+    private func applyTrashChanges(_ removedURLs: [URL]) async {
+        guard !removedURLs.isEmpty, let current = snapshot, let currentRoot = current.rootNode else { return }
+        let updatedRoot = FileTreeUpdater.removing(removedURLs, from: currentRoot)
+        let removedPaths = removedURLs.map { $0.standardizedFileURL.path }
+        let updatedIssues = current.issues.filter { issue in
+            !removedPaths.contains { issue.path == $0 || issue.path.hasPrefix($0 + "/") }
+        }
+        let updatedProgress = ScanProgress(filesScanned: updatedRoot?.fileCount ?? 0,
+            bytesAggregated: updatedRoot?.allocatedBytes ?? 0, currentPath: current.root.path,
+            issues: updatedIssues.count)
+        progress = updatedProgress
+        if let focusedNode, removedPaths.contains(where: { focusedNode.url.path == $0 || focusedNode.url.path.hasPrefix($0 + "/") }) {
+            self.focusedNode = nil
+        }
+
+        let thisScanID = scanID
+        snapshot = DiskUsageSnapshot(root: current.root, startedAt: current.startedAt, finishedAt: Date(),
+            completeness: current.completeness, capacity: current.capacity, rootNode: updatedRoot,
+            issues: updatedIssues, progress: updatedProgress)
+
+        let capacityProvider = VolumeInfoProvider()
+        let refreshedCapacity = await Task.detached(priority: .utility) {
+            (try? capacityProvider.capacity(for: current.root)) ?? current.capacity
+        }.value
+        guard scanID == thisScanID else { return }
+        snapshot = DiskUsageSnapshot(root: current.root, startedAt: current.startedAt, finishedAt: Date(),
+            completeness: current.completeness, capacity: refreshedCapacity, rootNode: updatedRoot,
+            issues: updatedIssues, progress: updatedProgress)
     }
 
     func addExclusion(_ path: String) {

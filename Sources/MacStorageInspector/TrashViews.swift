@@ -49,7 +49,7 @@ struct TrashResultsView: View {
                     VStack(alignment: .leading, spacing: 4) { Text(result.originalURL.path).font(.callout.monospaced()).textSelection(.enabled); if let error = result.errorDescription { Text(error).foregroundStyle(.red) } else { Text("Moved to Finder Trash").foregroundStyle(.secondary) } }
                 }.padding(.vertical, 3)
             }
-            HStack { Text("Available capacity is being recomputed by the refresh scan.").font(.caption).foregroundStyle(.secondary); Spacer(); Button("Done") { dismiss() }.keyboardShortcut(.defaultAction) }.padding()
+            HStack { Text("The existing results were updated in place and volume capacity was refreshed.").font(.caption).foregroundStyle(.secondary); Spacer(); Button("Done") { dismiss() }.keyboardShortcut(.defaultAction) }.padding()
         }.frame(minWidth: 650, minHeight: 420)
     }
 }

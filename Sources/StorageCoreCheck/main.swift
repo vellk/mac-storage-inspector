@@ -41,6 +41,14 @@ struct StorageCoreCheck {
             check(DeletionPolicy.normalizeSelection([child, parent]).count == 1, "nested selection collapse")
             check(!DeletionPolicy.validate(root, within: root, home: URL(fileURLWithPath: "/Users/test"), bundleURL: nil).allowed, "scope root rejection")
             check(DeletionPolicy.isProtected(URL(fileURLWithPath: "/System"), home: URL(fileURLWithPath: "/Users/test"), bundleURL: nil), "system root protection")
+
+            let treeLeaf = FileNode(url: root.appendingPathComponent("known-size"), kind: .file,
+                logicalBytes: 100, allocatedBytes: 80, fileCount: 1)
+            let treeRoot = FileNode(url: root, kind: .directory, logicalBytes: 100,
+                allocatedBytes: 80, fileCount: 1, children: [treeLeaf])
+            let updatedTree = FileTreeUpdater.removing([treeLeaf.url], from: treeRoot)
+            check(updatedTree?.fileCount == 0 && updatedTree?.allocatedBytes == 0,
+                "known Trash removal updates tree without rescan")
         } catch {
             failures.append("unexpected error: \(error)")
         }

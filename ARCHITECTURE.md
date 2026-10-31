@@ -12,6 +12,8 @@ The traversal retains one `FileNode` per visible filesystem entry because the ex
 
 `VolumeInfoProvider` uses Foundation capacity resource values. Its values are presented as authoritative volume metrics, separately from accessible scan aggregation.
 
+After a successful Trash operation, `FileTreeUpdater` removes the known paths from the existing snapshot and recomputes their ancestor aggregates without walking the filesystem again. If the counted entry of a hard-linked file was moved, another visible link is promoted to retain that identity's size contribution. Only the inexpensive volume-capacity resource values are queried again; users can still request a manual rescan when external filesystem changes are suspected.
+
 ## Accounting
 
 Regular-file logical size is `st_size`; allocated size is `st_blocks × 512`, matching Darwin's documented block unit. The scanner aggregates children bottom-up. The first regular file seen for a `(st_dev, st_ino)` identity contributes size and count; later hard links remain visible but contribute zero and carry a duplicate marker. Symlinks contribute only their link metadata and are leaf nodes.

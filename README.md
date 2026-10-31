@@ -31,7 +31,7 @@ This machine currently has Command Line Tools 16.0 but no full Xcode. Its defaul
 2. Browse results as top-level branches finish. Allocated and logical sizes remain separate.
 3. Inspect an item's full path, warning category, and metadata. Reveal it in Finder if uncertain.
 4. Explicitly select items, review the normalized top-level list and full paths, then confirm **Move to Trash**. Risky Library, application, developer, and package paths require an additional acknowledgement.
-5. Review individual successes and failures. The app rescans after a Trash operation.
+5. Review individual successes and failures. Successful items are removed from the current results and ancestor totals are recomputed in memory; only volume-capacity metadata is refreshed.
 
 No item is preselected. Finder Trash is reversible, and moving an item there does not immediately increase available space. The app does not empty Trash.
 

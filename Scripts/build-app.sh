@@ -22,6 +22,7 @@ contents_path="$app_path/Contents"
 mkdir -p "$contents_path/MacOS" "$contents_path/Resources"
 cp "$binary_path" "$contents_path/MacOS/MacStorageInspector"
 cp "$project_dir/Support/Info.plist" "$contents_path/Info.plist"
+cp "$project_dir/Assets/AppIcon.icns" "$contents_path/Resources/AppIcon.icns"
 chmod 755 "$contents_path/MacOS/MacStorageInspector"
 
 codesign --force --deep --sign - "$app_path"

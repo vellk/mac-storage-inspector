@@ -74,7 +74,10 @@ struct ScannerTests {
     @Test func cancellationProducesCancelledResult() async throws {
         let rootURL = try fixture(); defer { try? FileManager.default.removeItem(at: rootURL) }
         for index in 0..<2_000 { FileManager.default.createFile(atPath: rootURL.appendingPathComponent("file-\(index)").path, contents: Data([0])) }
-        let task = Task { await FileSystemScanner().scan(root: rootURL, options: .init(updateEvery: 1)) { _ in await Task.yield() } }
+        let task = Task {
+            await FileSystemScanner().scan(root: rootURL, options: .init(updateEvery: 1),
+                onProgress: { _ in await Task.yield() })
+        }
         task.cancel()
         let snapshot = await task.value
         #expect(snapshot.completeness == .cancelled)
